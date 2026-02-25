@@ -43,22 +43,49 @@ jobs:
 
       - name: Upload deployment assets
         run: |
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "mkdir -p '${{ secrets.DEPLOY_PATH }}/ops/compose' '${{ secrets.DEPLOY_PATH }}/ops/scripts' '${{ secrets.DEPLOY_PATH }}/config/env'"
+
           rsync -az --delete \
-            ops/compose/ ops/scripts/ config/env/ \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
+            ops/compose/ \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/ops/compose/"
+
+          rsync -az --delete \
+            ops/scripts/ \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/ops/scripts/"
+
+          rsync -az --delete \
+            --exclude ".env.prod" \
+            --exclude ".env.staging" \
+            config/env/ \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/config/env/"
 
       - name: Run deployment
         run: |
+          if [ "${{ inputs.target_env }}" = "prod" ]; then
+            API_ENV_FILE="${{ secrets.DEPLOY_PATH }}/config/env/.env.prod"
+          else
+            API_ENV_FILE="${{ secrets.DEPLOY_PATH }}/config/env/.env.staging"
+          fi
           ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd '${{ secrets.DEPLOY_PATH }}' && bash ops/scripts/deploy.sh --env '${{ inputs.target_env }}' --image-tag '${{ inputs.image_tag }}'"
+            "cd '${{ secrets.DEPLOY_PATH }}' && API_ENV_FILE='${API_ENV_FILE}' bash ops/scripts/deploy.sh --env '${{ inputs.target_env }}' --image-tag '${{ inputs.image_tag }}'"
 
       - name: Health check after deployment
         run: |
+          if [ "${{ inputs.target_env }}" = "prod" ]; then
+            HEALTH_URL="http://127.0.0.1:3000/ready"
+          else
+            HEALTH_URL="http://127.0.0.1:3001/ready"
+          fi
           ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd '${{ secrets.DEPLOY_PATH }}' && bash ops/scripts/health-check.sh --env '${{ inputs.target_env }}'"
+            "cd '${{ secrets.DEPLOY_PATH }}' && HEALTH_URL='${HEALTH_URL}' bash ops/scripts/health-check.sh --env '${{ inputs.target_env }}'"
 
       - name: Auto rollback on failure
         if: failure()
         run: |
+          if [ "${{ inputs.target_env }}" = "prod" ]; then
+            API_ENV_FILE="${{ secrets.DEPLOY_PATH }}/config/env/.env.prod"
+          else
+            API_ENV_FILE="${{ secrets.DEPLOY_PATH }}/config/env/.env.staging"
+          fi
           ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd '${{ secrets.DEPLOY_PATH }}' && bash ops/scripts/rollback.sh --env '${{ inputs.target_env }}' --to previous"
+            "cd '${{ secrets.DEPLOY_PATH }}' && API_ENV_FILE='${API_ENV_FILE}' bash ops/scripts/rollback.sh --env '${{ inputs.target_env }}' --to previous"
