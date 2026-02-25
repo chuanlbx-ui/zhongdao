@@ -29,3 +29,8 @@ Public operations and deployment repository for Zhongdao.
 - Never commit real `.env` files.
 - Use GitHub Secrets + server runtime env injection.
 - CI runs secret scan and release-readiness checks on every PR.
+
+## Internal network deployment
+
+If your server only has LAN IP (for example `172.16.x.x`), use a self-hosted GitHub runner on that server.
+See `docs/ops/self-hosted-runner-setup.md`.
