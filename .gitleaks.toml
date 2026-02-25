@@ -1,0 +1,23 @@
+title = "zhongdao-public-gitleaks"
+
+[allowlist]
+description = "Allowed placeholder files"
+paths = [
+  '''config/env/.env.example''',
+  '''config/env/.env.staging.example''',
+  '''config/env/.env.prod.example''',
+  '''README.md''',
+  '''docs/'''
+]
+
+[[rules]]
+id = "generic-api-key"
+description = "Generic API key pattern"
+regex = '''(?i)(api[_-]?key|token|secret)[^a-zA-Z0-9]{0,3}['"]?[a-zA-Z0-9_\-]{16,}['"]?'''
+tags = ["key", "token", "secret"]
+
+[[rules]]
+id = "database-url"
+description = "Database connection URL"
+regex = '''(?i)(postgres|mysql|mongodb|redis):\/\/[^\\s'"]+'''
+tags = ["database", "uri"]

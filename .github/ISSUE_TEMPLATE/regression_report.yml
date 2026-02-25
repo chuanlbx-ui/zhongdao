@@ -1,0 +1,56 @@
+name: Regression Report
+description: Report a feature that worked before but broke after a change.
+title: "[Regression]: "
+labels: ["bug", "regression", "high-priority"]
+body:
+  - type: textarea
+    id: broken_flow
+    attributes:
+      label: Broken flow
+      description: Which previously working flow is now broken?
+      placeholder: "Example: user checkout flow fails at payment callback."
+    validations:
+      required: true
+
+  - type: input
+    id: last_known_good
+    attributes:
+      label: Last known good version/commit
+      placeholder: "Example: v0.6.1 / 18ca9d4"
+    validations:
+      required: true
+
+  - type: input
+    id: first_bad
+    attributes:
+      label: First known bad version/commit
+      placeholder: "Example: v0.6.2 / 8fd2d10"
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Blast radius
+      description: Who is affected and how often does it happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: rollback
+    attributes:
+      label: Rollback plan
+      description: If production is affected, define rollback action and owner.
+    validations:
+      required: true

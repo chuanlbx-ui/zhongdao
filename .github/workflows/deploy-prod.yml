@@ -1,0 +1,64 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy"
+        required: true
+        default: "latest"
+      target_env:
+        description: "Target environment"
+        required: true
+        default: "prod"
+        type: choice
+        options:
+          - prod
+          - staging
+
+env:
+  NODE_VERSION: "20.x"
+
+jobs:
+  deploy:
+    name: Deploy with health-check and rollback
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target_env == 'prod' && 'production' || 'staging' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        run: |
+          test -n "${{ secrets.DEPLOY_HOST }}"
+          test -n "${{ secrets.DEPLOY_USER }}"
+          test -n "${{ secrets.DEPLOY_SSH_KEY }}"
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload deployment assets
+        run: |
+          rsync -az --delete \
+            ops/compose/ ops/scripts/ config/env/ \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:${{ secrets.DEPLOY_PATH }}/"
+
+      - name: Run deployment
+        run: |
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd '${{ secrets.DEPLOY_PATH }}' && bash ops/scripts/deploy.sh --env '${{ inputs.target_env }}' --image-tag '${{ inputs.image_tag }}'"
+
+      - name: Health check after deployment
+        run: |
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd '${{ secrets.DEPLOY_PATH }}' && bash ops/scripts/health-check.sh --env '${{ inputs.target_env }}'"
+
+      - name: Auto rollback on failure
+        if: failure()
+        run: |
+          ssh "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd '${{ secrets.DEPLOY_PATH }}' && bash ops/scripts/rollback.sh --env '${{ inputs.target_env }}' --to previous"

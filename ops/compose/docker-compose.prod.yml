@@ -1,0 +1,17 @@
+services:
+  api:
+    image: ghcr.io/chuanlbx-ui/zhongdao-api:${IMAGE_TAG:-latest}
+    container_name: zhongdao-api-prod
+    restart: unless-stopped
+    env_file:
+      - ${API_ENV_FILE:-../../config/env/.env.prod.example}
+    ports:
+      - "${API_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    volumes:
+      - ../../logs/api:/app/logs

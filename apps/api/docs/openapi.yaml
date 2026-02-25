@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Zhongdao Minimal API
+  version: 0.1.0
+  description: Minimal runtime API for deployment and readiness verification.
+servers:
+  - url: https://api.example.com
+paths:
+  /health:
+    get:
+      summary: Liveness check
+      responses:
+        "200":
+          description: Service is healthy
+  /ready:
+    get:
+      summary: Readiness check
+      responses:
+        "200":
+          description: Service is ready
+  /debug/ping:
+    get:
+      summary: Debug ping endpoint
+      responses:
+        "200":
+          description: Pong response

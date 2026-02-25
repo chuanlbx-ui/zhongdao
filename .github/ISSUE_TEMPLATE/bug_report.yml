@@ -1,0 +1,83 @@
+name: Bug Report
+description: Report a defect with reproducible details.
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is broken and what did you expect?
+      placeholder: A short and clear summary.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      description: Exact steps to reproduce.
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: result
+    attributes:
+      label: Expected vs actual
+      description: Describe expected and actual behavior.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - P0 - Service unavailable / major data risk
+        - P1 - Core feature blocked
+        - P2 - Partial functional impact
+        - P3 - Cosmetic / low impact
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Impact area
+      options:
+        - API
+        - Monitoring
+        - Data / Migration
+        - Infra / Deploy
+        - Security / Privacy
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and version
+      description: Include app version/tag/commit, browser/device, and env.
+      placeholder: "Example: v0.6.2, commit abc1234, Chrome 132, production"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / traces / screenshots
+      description: Attach anything that helps diagnose quickly.
+    validations:
+      required: false
+
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Root-cause hypothesis (optional)
+      description: If known, share your likely root cause.
+    validations:
+      required: false

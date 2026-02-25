@@ -1,0 +1,20 @@
+{
+  "name": "zhongdao-public-ops",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Public deployment and operations repository for Zhongdao",
+  "scripts": {
+    "quality:api": "npm --prefix apps/api run quality:gate",
+    "release:validate": "node scripts/validate-release-readiness.mjs",
+    "security:scan": "node scripts/check-secret-exposure.mjs",
+    "quality:check": "npm run security:scan && npm run quality:api && npm run release:validate",
+    "deploy:staging": "bash ops/scripts/deploy.sh --env staging --image-tag latest",
+    "deploy:prod": "bash ops/scripts/deploy.sh --env prod --image-tag latest",
+    "rollback:staging": "bash ops/scripts/rollback.sh --env staging --to previous",
+    "rollback:prod": "bash ops/scripts/rollback.sh --env prod --to previous"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
