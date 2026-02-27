@@ -86,9 +86,9 @@ jobs:
         run: |
           DEPLOY_PATH="${{ secrets.DEPLOY_PATH }}"
           if [ "${{ inputs.target_env }}" = "prod" ]; then
-            HEALTH_URL="http://127.0.0.1:3000/ready"
+            HEALTH_URL="http://127.0.0.1:3000/health"
           else
-            HEALTH_URL="http://127.0.0.1:3001/ready"
+            HEALTH_URL="http://127.0.0.1:3001/health"
           fi
           cd "$DEPLOY_PATH"
           HEALTH_URL="$HEALTH_URL" bash ops/scripts/health-check.sh --env "${{ inputs.target_env }}"
